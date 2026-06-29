@@ -25,6 +25,14 @@ export interface TeamsData {
     "target_completion_date": string
 }
 
+export interface ProjectData {
+    project_name: string, 
+    description: string, 
+    start_date: string, 
+    target_completion_date: string, 
+    team_id: number
+}
+
 export interface TokenPayLoad {
     email: string
 }

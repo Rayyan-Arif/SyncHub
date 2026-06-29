@@ -104,8 +104,7 @@ export const isAccessAllowed = (roles: string[]) => {
 
 export const isOrganizationPermission = (roles: string[]) => {
     return catchAsync(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-        let organization_id = null;
-        organization_id = req.body.organization_id ?? req.params.organization_id;
+        const organization_id: number = req.body.organization_id ?? req.params.organization_id;
 
         if(!organization_id)
             throw new AppError("Please provide an organization", 400);
@@ -114,14 +113,38 @@ export const isOrganizationPermission = (roles: string[]) => {
         if(roles.includes('ADMIN')){
             user = await pool.query("SELECT 1 FROM organization WHERE organization_id = $1 AND admin_id = $2;", [req.params.organization_id, req.user.user_id]);
         }
-        console.log(req.user.user_id, organization_id, roles);
-
+        
         if(!user?.rowCount)
-            user = await pool.query("SELECT 1 FROM organization_membership WHERE organization_id = $1 AND user_id = $2 and user_role = ANY($3);", [req.params.organization_id, req.user.user_id, roles]);
-
-        if(!user.rowCount)
+            user = await pool.query("SELECT 1 FROM organization_membership WHERE organization_id = $1 AND user_id = $2 and user_role = ANY($3);", [organization_id, req.user.user_id, roles]);
+        
+        if(!user?.rowCount)
             throw new AppError("Only allowed members of the organization can perform this operation.", 401);
 
         next();
     });
 }
+
+export const isTeamOfOrganization = catchAsync(async(req, res, next) => {
+    const {organization_id, team_id} = req.body;
+    
+    const isTeamValid = (await pool.query("SELECT 1 FROM team WHERE team_id = $1 AND organization_id = $2 AND manager_id = $3", [team_id, organization_id, req.user.user_id])).rowCount;
+
+    if(!isTeamValid)
+        throw new AppError("Team not found.", 404);
+
+    next();
+});
+
+export const isProjectAccessAllowed = catchAsync(async(req, res, next) => {
+    const {project_id, team_id} = req.body;
+
+    if(!project_id || !team_id)
+        throw new AppError("No such project or team exists.", 400);
+    
+    const isProjectAccess = (await pool.query("SELECT 1 FROM project p WHERE project_id = $1 AND p.team_id = $2 AND EXISTS(SELECT 1 FROM team WHERE team_id = p.team_id AND manager_id = $3);", [project_id, team_id, req.user.user_id])).rowCount;
+
+    if(!isProjectAccess)
+        throw new AppError("Project not found.", 404);
+
+    next();
+});

@@ -59,6 +59,9 @@ CREATE TABLE team(
 CREATE TABLE team_membership(
     team_id INT,
     team_member_id INT
+    FOREIGN KEY(team_id) REFERENCES team(team_id),
+    FOREIGN KEY(team_member_id) REFERENCES users(user_id),
+    PRIMARY KEY(team_id, team_member_id)
 );
 
 CREATE TABLE project(
@@ -70,6 +73,7 @@ CREATE TABLE project(
     target_completion_date DATE NOT NULL,
     team_id INT NOT NULL,
     FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE
+    CONSTRAINT valid_date CHECK(target_completion_date > start_date)
 );
 
 CREATE TABLE project_enrollment(
@@ -83,8 +87,8 @@ CREATE TABLE project_enrollment(
 CREATE TABLE task(
     task_id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
-    description TEXT,
-    project_id INT,
+    description TEXT NOT NULL,
+    project_id INT NOT NULL,
     FOREIGN KEY(project_id) REFERENCES project(project_id) ON DELETE CASCADE
 );
 
@@ -97,6 +101,17 @@ CREATE TABLE assigned_tasks(
     FOREIGN KEY(task_id) REFERENCES task(task_id) ON DELETE CASCADE,
     FOREIGN KEY(member_id) REFERENCES users(user_id) ON DELETE CASCADE,
     PRIMARY KEY(task_id, member_id, assigned_date, assigned_date, due_date)
+);
+
+CREATE TABLE announcements(
+    announcement_id SERIAL PRIMARY KEY,
+    announcement TEXT,
+    created_at DATE DEFAULT NOW(),
+    team_id INT,
+    project_id INT,
+    FOREIGN KEY(team_id) REFERENCES team(team_id),
+    FOREIGN KEY(project_id) REFERENCES project(project_id),
+    CONSTRAINT valid_fk_key CHECK(team_id IS NOT NULL OR project_id IS NOT NULL)
 );
 
 DROP FUNCTION IF EXISTS get_dashboard_stats();
