@@ -61,7 +61,7 @@ export const deleteOrganization = catchAsync(async (req: Request, res: Response,
     res.status(204).send({});
 });
 
-export const getOrganizationDetails = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getOrganizationDetailsForAdmin = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const organization_id: number = +req.params.organization_id!;
 
     if(!organization_id)
@@ -145,3 +145,70 @@ export const generateReportForAdmin = (roles: string[]) => {
         });
     });
 }
+
+export const getAllOrganizations = catchAsync(async(req, res, next) => {
+    const organizations = (await pool.query(`
+        SELECT 
+        (
+            SELECT json_agg(o)
+            FROM organization o WHERE admin_id = $1
+        ) AS admin_of_organizations,
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'organization_id', o.organization_id,
+                    'organization_name', o.organization_name,
+                    'contact', contact,
+                    'description', description,
+                    'created_at', created_at,
+                    'role_in_organization', om.user_role
+                )
+            )
+            FROM (SELECT * FROM organization_membership WHERE user_id = $1) om 
+            JOIN organization o ON o.organization_id = om.organization_id
+        ) AS member_of_organizations;
+    `, [req.user.user_id])).rows[0];
+
+    organizations.admin_of_organizations = organizations.admin_of_organizations ?? [];
+    organizations.member_of_organizations = organizations.member_of_organizations ?? [];
+
+    res.status(200).send({
+        status: 'success',
+        data: {
+            organizations
+        }
+    });
+});
+
+export const getOrganizationTeamsForMember = catchAsync(async(req, res, next) => {
+    const {organization_id} = req.body;
+
+    const teams = (await pool.query(`
+        SELECT 
+        (
+            SELECT json_agg(t)
+            FROM team t WHERE manager_id = $1 AND organization_id = $2
+        ) AS teams_created,
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'team_id', t.team_id,
+                    'team_name', t.team_name,
+                    'no_of_members', t.no_of_members
+                )
+            )
+            FROM team t WHERE organization_id = $2 AND EXISTS
+            (SELECT 1 FROM team_membership WHERE team_id = t.team_id AND team_member_id = $1)
+        ) AS teams_joined;    
+    `, [req.user.user_id, organization_id])).rows[0];
+
+    teams.teams_created = teams.teams_created ?? [];
+    teams.teams_joined = teams.teams_joined ?? [];
+
+    res.status(200).send({
+        status: 'success',
+        data: {
+            teams
+        }
+    });
+});

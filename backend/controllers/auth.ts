@@ -138,7 +138,7 @@ export const isTeamOfOrganization = catchAsync(async(req, res, next) => {
 export const isProjectAccessAllowed = catchAsync(async(req, res, next) => {
     const {project_id, team_id} = req.body;
 
-    if(!project_id || !team_id)
+    if(!(+project_id) || !(+team_id))
         throw new AppError("No such project or team exists.", 400);
     
     const isProjectAccess = (await pool.query("SELECT 1 FROM project p WHERE project_id = $1 AND p.team_id = $2 AND EXISTS(SELECT 1 FROM team WHERE team_id = p.team_id AND manager_id = $3);", [project_id, team_id, req.user.user_id])).rowCount;

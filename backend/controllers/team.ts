@@ -18,7 +18,7 @@ export const getAllTeamsOfManager = catchAsync(async(req, res, next) => {
 export const getTeamDetails = catchAsync(async(req, res, next) => {
     const {organization_id, team_id} = req.params;
 
-    if(!team_id)
+    if(!(+team_id!))
         throw new AppError("Please provide a team.", 400);
 
     const isTeamValid = (await pool.query("SELECT team_name, no_of_members FROM team WHERE manager_id = $1 AND team_id = $2 AND organization_id = $3", [req.user.user_id, team_id, organization_id])).rows[0];
@@ -61,7 +61,7 @@ export const getTeamDetails = catchAsync(async(req, res, next) => {
 export const createTeam = catchAsync(async (req, res, next) => {
     const {organization_id, team_name, no_of_members} = req.body;
 
-    if(!team_name || !no_of_members)
+    if(!team_name || !(+no_of_members))
         throw new AppError("Please provide complete team details.", 400);
 
     await pool.query("INSERT INTO team (team_name, no_of_members, organization_id, manager_id) VALUES ($1, $2, $3, $4);", [team_name, no_of_members, organization_id, req.user.user_id]);
@@ -72,7 +72,7 @@ export const createTeam = catchAsync(async (req, res, next) => {
 export const removeTeam = catchAsync(async(req, res, next) => {
     const {organization_id, team_id} = req.body;
 
-    if(!team_id)
+    if(!(+team_id))
         throw new AppError("Please provide a team to delete.", 400);
 
     await pool.query("DELETE FROM team WHERE team_id = $1 AND manager_id = $2 AND organization_id = $3;", [team_id, req.user.user_id, organization_id]);
@@ -83,7 +83,7 @@ export const removeTeam = catchAsync(async(req, res, next) => {
 export const addMemberToTeam = catchAsync(async(req, res, next) => {
     const {organization_id, team_id, user_emails} = req.body;
 
-    if(!team_id || (!user_emails || !Array.isArray(user_emails) || user_emails.length === 0))
+    if(!(+team_id) || (!user_emails || !Array.isArray(user_emails) || user_emails.length === 0))
         throw new AppError("Please provide both team and user emails.", 400);
 
     //checking if member exists in this organization

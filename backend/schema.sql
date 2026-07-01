@@ -73,7 +73,7 @@ CREATE TABLE project(
     target_completion_date DATE NOT NULL,
     team_id INT NOT NULL,
     FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE
-    CONSTRAINT valid_date CHECK(target_completion_date > start_date)
+    CONSTRAINT valid_date CHECK(target_completion_date >= start_date)
 );
 
 CREATE TABLE project_enrollment(
@@ -101,6 +101,7 @@ CREATE TABLE assigned_tasks(
     FOREIGN KEY(task_id) REFERENCES task(task_id) ON DELETE CASCADE,
     FOREIGN KEY(member_id) REFERENCES users(user_id) ON DELETE CASCADE,
     PRIMARY KEY(task_id, member_id, assigned_date, assigned_date, due_date)
+    CONSTRAINT due_greater_than_assigned CHECK(due_date >= assigned_date)
 );
 
 CREATE TABLE announcements(
@@ -111,7 +112,8 @@ CREATE TABLE announcements(
     project_id INT,
     FOREIGN KEY(team_id) REFERENCES team(team_id),
     FOREIGN KEY(project_id) REFERENCES project(project_id),
-    CONSTRAINT valid_fk_key CHECK(team_id IS NOT NULL OR project_id IS NOT NULL)
+    CONSTRAINT valid_fk_key CHECK(team_id IS NOT NULL OR project_id IS NOT NULL),
+    UNIQUE(announcement, team_id, project_id, created_at)
 );
 
 DROP FUNCTION IF EXISTS get_dashboard_stats();

@@ -21,5 +21,3 @@ export const getOwnerStats = catchAsync(async(req: Request, res: Response, next:
         }
     });
 });
-
-export const createAn
