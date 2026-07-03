@@ -11,6 +11,7 @@ import projectRouter from "./routes/projectRouter.js";
 import taskRouter from "./routes/taskRouter.js";
 import announcementRouter from "./routes/announcementRouter.js";
 import organizationRouter from "./routes/organizationRouter.js";
+import { globalErrorHandler } from "./utils/error.js";
 
 const app = express();
 
@@ -51,5 +52,7 @@ app.use((req, res) => {
         message: 'Route not found.'
     });
 });
+
+app.use(globalErrorHandler);
 
 export default app;

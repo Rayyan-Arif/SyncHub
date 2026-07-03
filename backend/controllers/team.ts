@@ -107,13 +107,13 @@ export const addMemberToTeam = catchAsync(async(req, res, next) => {
 });
 
 export const removeMemberFromTeam = catchAsync(async(req, res, next) => {
-    const {organization_id, team_id, user_email} = req.body;
+    const {organization_id, team_id, user_id} = req.body;
 
-    if(!(+team_id) || !user_email)
-        throw new AppError("Please provide both team and user email.", 400);
+    if(!(+team_id) || !(+user_id))
+        throw new AppError("Please provide both team and user.", 400);
 
     //checking if member exists in this organization
-    const userID = (await pool.query("SELECT user_id FROM organization_membership WHERE organization_id = $1 AND user_role = 'MEMBER' AND user_id IN (SELECT user_id FROM users WHERE user_email = $2);", [+organization_id, user_email])).rows[0].user_id;
+    const userID = (await pool.query("SELECT user_id FROM organization_membership WHERE organization_id = $1 AND user_role = 'MEMBER' AND user_id = $2;", [+organization_id, user_id])).rows[0].user_id;
     const isTeamExist = (await pool.query("SELECT 1 FROM team WHERE organization_id = $1 AND team_id = $2 and manager_id = $3;", [+organization_id, +team_id, req.user.user_id])).rows[0];
 
     if(!userID)
@@ -122,7 +122,22 @@ export const removeMemberFromTeam = catchAsync(async(req, res, next) => {
     if(!isTeamExist)
         throw new AppError("This team does not exist.", 400);
 
-    await pool.query("DELETE FROM team_membership WHERE team_id = $1 AND team_member_id = $2;", [team_id, userID]);
+    const client = await pool.connect();
+
+    try{
+        await client.query('BEGIN');
+
+        await client.query('DELETE FROM team_membership WHERE team_id = $1 AND team_member_id = $2;', [team_id, userID]);
+
+        const projects = (await client.query('DELETE FROM project_enrollment WHERE member_id = $1 AND project_id IN (SELECT project_id FROM project WHERE team_id = $2) RETURNING project_id;', [user_id, team_id])).rows.map(project => project.project_id);
+
+        await client.query('DELETE FROM assigned_tasks WHERE member_id = $1 AND task_id IN (SELECT task_id FROM task WHERE project_id = ANY($2));', [userID, projects]); 
+
+        await client.query('COMMIT');
+    } catch(err){
+        await client.query('ROLLBACK');
+        throw err;
+    }
 
     res.status(204).send({});
 });

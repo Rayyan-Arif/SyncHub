@@ -63,17 +63,32 @@ export const removeMemberFromProject = catchAsync(async(req, res, next) => {
     if(!memberID)
         throw new AppError("This member is not part of the team", 404);
 
-    const result = await pool.query(`
-        DELETE FROM project_enrollment
-        WHERE project_id = $1 AND member_id = $2 AND 
-        EXISTS (
-            SELECT 1 FROM project WHERE project_id = $1 AND team_id = $3
-        );
-    `, [project_id, memberID, team_id]);
+    const client = await pool.connect();
+    
+    try{
+        await client.query("BEGIN");
 
+        await client.query(`
+            DELETE FROM project_enrollment
+            WHERE project_id = $1 AND member_id = $2 AND 
+            EXISTS (
+                SELECT 1 FROM project WHERE project_id = $1 AND team_id = $3
+            );
+        `, [project_id, memberID, team_id]);
+
+        await client.query(`
+            DELETE FROM assigned_tasks WHERE member_id = $2 AND task_id IN
+            (
+                SELECT task_id FROM task WHERE project_id = $1
+            );
+        `, [project_id, memberID]);
+
+        await client.query('COMMIT');
+    } catch(err){
+        await client.query("ROLLBACK");
+        throw err;
+    }
     //DELETE query returns how many rows inserted
-    if(!result.rowCount)
-        throw new AppError("The membership of user in this project is not found or this project is not part of the team.", 404);
 
     res.status(204).send({status: 'success'});
 });
