@@ -53,41 +53,23 @@ export const addMemberToProject = catchAsync(async(req, res, next) => {
 }); 
 
 export const removeMemberFromProject = catchAsync(async(req, res, next) => {
-    const {project_id, team_id, member_email} = req.body;
+    const {project_id, team_id, member_id} = req.body;
 
-    if(!(+project_id) || !(+team_id) || !member_email)
+    if(!(+project_id) || !(+team_id) || !(+member_id))
         throw new AppError("Please provide a project and member.", 400);
  
-    const memberID = (await pool.query("SELECT team_member_id FROM team_membership tm WHERE team_member_id = (SELECT user_id FROM users u WHERE user_email = $1);", [member_email])).rows[0]?.team_member_id;
+    const memberID = (await pool.query("SELECT 1 FROM team_membership tm WHERE team_member_id = $1;", [member_id])).rows[0];
 
     if(!memberID)
         throw new AppError("This member is not part of the team", 404);
 
-    const client = await pool.connect();
-    
-    try{
-        await client.query("BEGIN");
-
-        await client.query(`
-            DELETE FROM project_enrollment
-            WHERE project_id = $1 AND member_id = $2 AND 
-            EXISTS (
-                SELECT 1 FROM project WHERE project_id = $1 AND team_id = $3
-            );
-        `, [project_id, memberID, team_id]);
-
-        await client.query(`
-            DELETE FROM assigned_tasks WHERE member_id = $2 AND task_id IN
-            (
-                SELECT task_id FROM task WHERE project_id = $1
-            );
-        `, [project_id, memberID]);
-
-        await client.query('COMMIT');
-    } catch(err){
-        await client.query("ROLLBACK");
-        throw err;
-    }
+    await pool.query(`
+        DELETE FROM project_enrollment
+        WHERE project_id = $1 AND member_id = $2 AND 
+        EXISTS (
+            SELECT 1 FROM project WHERE project_id = $1 AND team_id = $3
+        );
+    `, [project_id, member_id, team_id]);
     //DELETE query returns how many rows inserted
 
     res.status(204).send({status: 'success'});

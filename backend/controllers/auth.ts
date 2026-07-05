@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { AppError, catchAsync } from "../utils/error.js";
 import pool from "../db.js";
-import type { LoginBody, SignupBody, TokenPayLoad } from "../utils/interfaces.js";
+import type { LoginBody, SignupBody, TokenPayLoad, User } from "../utils/interfaces.js";
 
 // Request<
 //     Params,
@@ -18,33 +18,39 @@ const signToken = (email: string): string => {
     });
 }
 
-const createFreshUser = (email: string, status: number, res: Response): void => {
-    const token: string = signToken(email); 
+const createFreshUser = (user: User, status: number, res: Response): void => {
+    const token: string = signToken(user.user_email); 
 
     res.cookie("synchub-user-token", token, {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 40 * 24 * 60 * 60 * 1000
     });
 
     res.status(status).send({
         status: 'success',
-        token
+        data: {
+            token, 
+            user
+        }
     });
 }
 
 export const signup = catchAsync(async (req: Request<{}, {}, SignupBody>, res: Response, next: NextFunction): Promise<void> => {
-    const {user_name, user_email, user_password} = req.body;
+    const {user_name, user_email, user_password, confirm_password} = req.body;
 
-    if(!user_name || !user_email || !user_password)
+    if(!user_name || !user_email || !user_password || !confirm_password)
         throw new AppError("Incomplete data for signup", 400);
+
+    if(confirm_password !== user_password)
+        throw new AppError("Passwords are not the same.", 400);
 
     const hashed_password = await bcrypt.hash(user_password, 12);
 
-    await pool.query("INSERT INTO users (user_name, user_email, user_password) VALUES ($1, $2, $3);", [user_name, user_email, hashed_password]);
+    const user = (await pool.query("INSERT INTO users (user_name, user_email, user_password) VALUES ($1, $2, $3) RETURNING user_id, user_name, user_email, user_role;", [user_name, user_email, hashed_password])).rows[0];
 
-    createFreshUser(user_email, 201, res);
+    createFreshUser(user, 201, res);
 });
 
 export const login = catchAsync(async(req: Request<{}, {}, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
@@ -53,14 +59,14 @@ export const login = catchAsync(async(req: Request<{}, {}, LoginBody>, res: Resp
     if(!user_email || !user_password)
         throw new AppError("Please provide email and password", 400);
 
-    const user = (await pool.query("SELECT user_email, user_password FROM users WHERE user_email = $1;", [user_email])).rows[0];
+    const user = (await pool.query("SELECT user_id, user_name, user_email, user_password, user_role FROM users WHERE user_email = $1;", [user_email])).rows[0];
     
     const isPasswordCorrect = await bcrypt.compare(user_password, user?.user_password ?? "");
 
     if(!user || !isPasswordCorrect)
         throw new AppError("Incorrect email or password.", 401);
 
-    createFreshUser(user_email, 200, res);
+    createFreshUser({user_id: user.user_id, user_name: user.user_name, user_email: user.user_email, user_role: user.user_role}, 200, res);
 });
 
 export const protect = catchAsync(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -84,7 +90,7 @@ export const protect = catchAsync(async(req: Request, res: Response, next: NextF
 export const logout = catchAsync(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
     res.clearCookie("synchub-user-token", {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         secure: process.env.NODE_ENV === 'production',
         maxAge: 40 * 24 * 60 * 60 * 1000
     });

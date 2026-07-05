@@ -116,32 +116,56 @@ CREATE TABLE announcements(
     UNIQUE(announcement, team_id, project_id, created_at)
 );
 
-DROP FUNCTION IF EXISTS get_dashboard_stats();
-CREATE OR REPLACE FUNCTION get_dashboard_stats()
-RETURNS TABLE (total_organizations BIGINT, total_users BIGINT, total_teams BIGINT, total_projects BIGINT, total_tasks BIGINT, users_this_week BIGINT, users_this_month BIGINT)
+DROP FUNCTION IF EXISTS delete_tasks_on_project; 
+CREATE OR REPLACE FUNCTION delete_tasks_on_project()
+RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-	RETURN QUERY
-	SELECT 
-		(SELECT COUNT(*) FROM organization),
-		(SELECT COUNT(*) FROM users),
-		(SELECT COUNT(*) FROM team),
-		(SELECT COUNT(*) FROM project),
-		(SELECT COUNT(*) FROM task),
-		(SELECT COUNT(*) FROM (SELECT user_id FROM users WHERE created_at >= CURRENT_DATE - 7)),
-		(SELECT COUNT(*) FROM (SELECT user_id FROM users WHERE created_at >= CURRENT_DATE - 30));
+	DELETE FROM assigned_tasks WHERE member_id = OLD.member_id AND
+	task_id IN (SELECT task_id FROM task WHERE project_id = OLD.project_id);
+	RETURN OLD;
 END;
 $$;
 
-DROP PROCEDURE IF EXISTS create_organization;
-CREATE OR REPLACE PROCEDURE create_organization(name TEXT, contact VARCHAR(13), description TEXT, user_id INT)
+CREATE TRIGGER delete_assigned_tasks
+BEFORE DELETE 
+ON project_enrollment
+FOR EACH ROW
+EXECUTE FUNCTION delete_tasks_on_project();
+
+DROP FUNCTION IF EXISTS delete_projects_on_team; 
+CREATE OR REPLACE FUNCTION delete_projects_on_team()
+RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
-DECLARE
-	oid INT;
 BEGIN
-	INSERT INTO organization (organization_name, contact, description, admin_id) VALUES (name, contact, description, user_id);
-	SELECT organization_id INTO oid FROM organization WHERE admin_id = user_id;
+	DELETE FROM project_enrollment WHERE member_id = OLD.team_member_id AND
+	project_id IN (SELECT project_id FROM project WHERE team_id = OLD.team_id);
+	RETURN OLD;
 END;
 $$;
+
+CREATE TRIGGER delete_project_enrollments
+BEFORE DELETE 
+ON team_membership
+FOR EACH ROW
+EXECUTE FUNCTION delete_projects_on_team();
+
+DROP FUNCTION IF EXISTS delete_teams_on_organization; 
+CREATE OR REPLACE FUNCTION delete_teams_on_organization()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	DELETE FROM team_membership WHERE team_member_id = OLD.user_id AND
+	team_id IN (SELECT team_id FROM team WHERE organization_id = OLD.organization_id);
+	RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER delete_team_membership
+BEFORE DELETE 
+ON organization_membership
+FOR EACH ROW
+EXECUTE FUNCTION delete_teams_on_organization();

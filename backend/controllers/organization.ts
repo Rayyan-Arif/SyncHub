@@ -9,7 +9,7 @@ export const createOrganization = catchAsync(async (req: Request, res: Response,
     if(!organization_name || !contact)
         throw new AppError("Please provide complete details of an organization.", 400);
     
-    await pool.query("CALL create_organization($1, $2, $3, $4);", [organization_name, contact, description, req.user.user_id]);
+    await pool.query("INSERT INTO organization (organization_name, contact, description, admin_id) VALUES ($1, $2, $3, $4);", [organization_name, contact, description, req.user.user_id]);
 
     res.status(201).send({
         status: 'success'
@@ -34,18 +34,13 @@ export const addUserToOrganization = catchAsync(async (req: Request, res: Respon
 });
 
 export const removeUserFromOrganization = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const {user_email, user_role} = req.body;
+    const {user_id, user_role} = req.body;
     const organization_id: number = +req.params.organization_id!;
 
-    if(!user_email || !organization_id || !user_role)
+    if(!(+user_id) || !(+organization_id) || !user_role)
         throw new AppError("Please provide complete details like email, organization and role of user.", 400);
 
-    const user = (await pool.query("SELECT user_id FROM users WHERE user_email = $1;", [user_email])).rows[0];
-
-    if(!user)
-        throw new AppError("User does not exist. Invalid email.", 404);
-
-    await pool.query("DELETE FROM organization_membership WHERE user_id = $1 AND organization_id = $2 AND user_role = $3;", [user.user_id, organization_id, user_role]);
+    await pool.query("DELETE FROM organization_membership WHERE user_id = $1 AND organization_id = $2 AND user_role = $3;", [user_id, organization_id, user_role]);
 
     res.status(204).send({});
 });
