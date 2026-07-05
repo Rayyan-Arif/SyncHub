@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: Inter, sans-serif;
+
+  --color-primary: #4f46e5;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --radius-card: 12px;
+}
+
+.button-property{
+  cursor: pointer;
+}
+
+.button-property:disabled{
+  cursor: not-allowed;
+  opacity: 0.5;
+}
