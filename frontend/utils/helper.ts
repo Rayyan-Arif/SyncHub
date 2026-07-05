@@ -16,7 +16,7 @@ export const getInitials = (name: string) => {
 
 export const navigateByRole = (navigate: (path: string) => void, userRole: string) => {
     if (userRole === 'OWNER') {
-        navigate('/owner/stats');
+        navigate('/owner');
         return;
     }
 

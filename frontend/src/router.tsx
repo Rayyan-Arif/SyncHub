@@ -15,7 +15,7 @@ const router = createBrowserRouter(
             <Route element={<MainLayout />} loader={getUserLoader} id="root">
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
-                <Route path="/owner/stats" element={<OwnerStatsPage />} />
+                <Route path="/owner" element={<OwnerStatsPage />} />
                 <Route path="*" element={<NotFoundPage />}/>
             </Route>
 
