@@ -110,7 +110,7 @@ export const isAccessAllowed = (roles: string[]) => {
 
 export const isOrganizationPermission = (roles: string[]) => {
     return catchAsync(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const organization_id: number = req.body.organization_id ?? req.params.organization_id;
+        const organization_id: number = req.body?.organization_id ?? req.params?.organization_id;
 
         if(!organization_id)
             throw new AppError("Please provide an organization", 400);

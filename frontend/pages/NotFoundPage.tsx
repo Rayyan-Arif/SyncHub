@@ -67,12 +67,6 @@ const NotFoundPage = () => {
                         >
                             Back to home
                         </Link>
-                        <Link
-                            to="/#features"
-                            className="inline-flex w-full items-center justify-center rounded-card border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary/50 sm:w-auto"
-                        >
-                            Browse features
-                        </Link>
                     </div>
                 </div>
             </main>

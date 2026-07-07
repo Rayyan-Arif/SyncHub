@@ -4,6 +4,8 @@ import NotFoundPage from '../pages/NotFoundPage';
 import LoginPage from '../pages/LoginPage';
 import SignupPage from '../pages/SignupPage';
 import OwnerStatsPage from '../pages/OwnerStatsPage';
+import UserDashboardPage from '../pages/memberPages/UserDashboardPage';
+import AdminOrganizationPage from '../pages/adminPages/AdminOrganizationPage';
 import MainLayout from '../layouts/MainLayout';
 import { getUserLoader } from "../utils/helper";
 
@@ -16,6 +18,8 @@ const router = createBrowserRouter(
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/owner" element={<OwnerStatsPage />} />
+                <Route path="/dashboard" element={<UserDashboardPage />} />
+                <Route path="/organization/admin/:organization_id" element={<AdminOrganizationPage />} />
                 <Route path="*" element={<NotFoundPage />}/>
             </Route>
 

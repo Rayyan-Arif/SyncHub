@@ -6,7 +6,7 @@ import {scrollToComponent} from '../utils/helper';
 const LandingPage = () => {
     return (
         <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-            <Navbar user={null} setUser={null}/>
+            <Navbar user={null} setUser={null} isLanding={true}/>
 
             {/* Hero */}
             <section className="relative overflow-hidden">

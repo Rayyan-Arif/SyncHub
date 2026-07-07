@@ -11,7 +11,7 @@ const MainLayout = () => {
 
     return (
         <>
-            <Navbar user={user} setUser={setUser} />
+            <Navbar user={user} setUser={setUser} isLanding={false}/>
             <Outlet context={{ user, setUser }} />
             <Footer />
         </>

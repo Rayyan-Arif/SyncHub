@@ -23,6 +23,10 @@ export const navigateByRole = (navigate: (path: string) => void, userRole: strin
     navigate('/dashboard');
 };
 
+export const toOrganizationSlug = (organizationName: string) => {
+    return organizationName.trim().toLowerCase().replace(/\s+/g, '-');
+};
+
 export const catchAsync = <T>(func: () => Promise<T>) => {
     return async () => {
         try {
@@ -50,4 +54,12 @@ export const formatDate = (date: Date): string => {
     const day = String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+}
+
+export const formatUserFriendlyDate = (date: string | Date): string => {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 }

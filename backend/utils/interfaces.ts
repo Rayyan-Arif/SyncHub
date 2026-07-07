@@ -14,7 +14,7 @@ declare global {
 }
 
 export interface TeamsData {
-    "team_id": string,
+    "team_id": number,
     "team_name": string,
     "no_of_members": number,
     "project_id": number,

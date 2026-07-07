@@ -21,7 +21,9 @@ const OwnerStatsPage = () => {
         dates.forEach(date => {
             if(!users?.find(user => formatDate(new Date(user.created_at)) === date))
                 filteredUsers.push({users_joined: 0, created_at: date});
-        })
+        });
+
+        filteredUsers.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
 
         return filteredUsers;
     }
@@ -106,7 +108,7 @@ const OwnerStatsPage = () => {
                             ))}
                         </div>
 
-                        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+                        <div className="mt-10 grid gap-6 lg:grid-cols-1">
                             <div className="rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                                     Users joined this week

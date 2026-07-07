@@ -18,12 +18,12 @@ export const gracefulShutdown = (server: Server): () => void => {
 }
 
 export const formatOrganizationDetails = (organizationDetails: Object, members: Object[], teamsAndProjects: TeamsData[]) => {
-    let organization = {...organizationDetails, members: [...members], teams: []};
+    let organization: {} = {...organizationDetails, members: [...members], teams: []}; 
 
-    let teams: any = [];
-    teams = teamsAndProjects.map(team => {
-        if(!teams.includes(team.team_id)){
-            return {
+    let teams: any[] = []; 
+    teamsAndProjects.forEach(team => {
+        if(!teams?.find(t => t?.team_id === team.team_id)){
+            teams.push({
                 team_id: team.team_id,
                 team_name: team.team_name,
                 no_of_members: team.no_of_members,
@@ -38,11 +38,11 @@ export const formatOrganizationDetails = (organizationDetails: Object, members: 
                         target_completion_date: project.target_completion_date
                     }
                 }).filter(project => project.team_id === team.team_id)
-            }
+            })
         }
     });
 
-    organization = {...organization, teams};
+    organization = {...organization, teams: teams ?? []};
 
     return organization;
 }

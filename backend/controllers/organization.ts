@@ -67,7 +67,7 @@ export const getOrganizationDetailsForAdmin = catchAsync(async (req: Request, re
 
     //get members data
     const members = (await pool.query(
-        `SELECT u.user_id, om.user_role, u.user_name, u.user_email, u.created_at FROM organization o 
+        `SELECT u.user_id, om.user_role, u.user_name, u.user_email FROM organization o 
         JOIN organization_membership om on o.organization_id = om.organization_id 
         JOIN users u on u.user_id = om.user_id AND om.user_role != 'ADMIN'
         WHERE o.organization_id = $1`, [organization_id]
@@ -75,7 +75,7 @@ export const getOrganizationDetailsForAdmin = catchAsync(async (req: Request, re
 
     //get teams and projects info
     const teamsAndProjects = (await pool.query(
-        `SELECT t.team_id, t.team_name, t.no_of_members, p.project_id, p.project_name, p.description, p.status, p.start_date, p.target_completion_date FROM organization o
+        `SELECT DISTINCT t.team_id, t.team_name, t.no_of_members, p.project_id, p.project_name, p.description, p.status, p.start_date, p.target_completion_date FROM organization o
         JOIN team t ON t.organization_id = o.organization_id
         JOIN project p ON p.team_id = t.team_id
         WHERE o.organization_id = $1;`, [organization_id]

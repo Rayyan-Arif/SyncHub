@@ -3,7 +3,7 @@ import { getInitials, scrollToComponent, API_URL } from "../utils/helper";
 import { useEffect, useState } from "react";
 import type { User } from "../utils/interfaces";
 
-const Navbar = ({ user, setUser }: { user: User | null; setUser: React.Dispatch<React.SetStateAction<User | null>> | null }) => {
+const Navbar = ({ user, setUser, isLanding }: { user: User | null; setUser: React.Dispatch<React.SetStateAction<User | null>> | null; isLanding: Boolean }) => {
     const [theme, setTheme] = useState<string>(localStorage.getItem("theme") ?? "light");
     const navigate = useNavigate();
 
@@ -40,11 +40,14 @@ const Navbar = ({ user, setUser }: { user: User | null; setUser: React.Dispatch<
                     <span className="text-lg font-semibold tracking-tight">SyncHub</span>
                 </Link>
 
-                <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-400 md:flex">
-                    <span onClick={() => scrollToComponent("features")} className="cursor-pointer transition hover:text-primary">Features</span>
-                    <span onClick={() => scrollToComponent("how-it-works")} className="cursor-pointer transition hover:text-primary">How it works</span>
-                    <span onClick={() => scrollToComponent("who-its-for")} className="cursor-pointer transition hover:text-primary">Who it’s for</span>
-                </nav>
+                {
+                    isLanding &&
+                    <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-400 md:flex">
+                        <span onClick={() => scrollToComponent("features")} className="cursor-pointer transition hover:text-primary">Features</span>
+                        <span onClick={() => scrollToComponent("how-it-works")} className="cursor-pointer transition hover:text-primary">How it works</span>
+                        <span onClick={() => scrollToComponent("who-its-for")} className="cursor-pointer transition hover:text-primary">Who it’s for</span>
+                    </nav>
+                }
 
                 <div className="flex items-center gap-3">
                     <button
@@ -143,26 +146,29 @@ const Navbar = ({ user, setUser }: { user: User | null; setUser: React.Dispatch<
             </div>
 
             <nav className="hidden border-t border-slate-200/80 bg-white/95 px-6 py-4 peer-checked:block dark:border-slate-800 dark:bg-slate-900/95 md:hidden">
-                <div className="flex flex-col gap-1">
-                    <span
-                        onClick={() => scrollToComponent("features")}
-                        className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
-                    >
-                        Features
-                    </span>
-                    <span
-                        onClick={() => scrollToComponent("how-it-works")}
-                        className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
-                    >
-                        How it works
-                    </span>
-                    <span
-                        onClick={() => scrollToComponent("who-its-for")}
-                        className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
-                    >
-                        Who it’s for
-                    </span>
-                </div>
+                {
+                    isLanding &&
+                    <div className="flex flex-col gap-1">
+                        <span
+                            onClick={() => scrollToComponent("features")}
+                            className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
+                        >
+                            Features
+                        </span>
+                        <span
+                            onClick={() => scrollToComponent("how-it-works")}
+                            className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
+                        >
+                            How it works
+                        </span>
+                        <span
+                            onClick={() => scrollToComponent("who-its-for")}
+                            className="cursor-pointer rounded-card px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-primary dark:text-slate-400 dark:hover:bg-slate-800"
+                        >
+                            Who it’s for
+                        </span>
+                    </div>
+                }
 
                 <div className="mt-4 flex flex-col gap-2 border-t border-slate-200/80 pt-4 dark:border-slate-800">
                     {user ? (
