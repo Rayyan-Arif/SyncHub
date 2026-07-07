@@ -85,6 +85,10 @@ const AdminOrganizationPage = () => {
     const [reportManagersPage, setReportManagersPage] = useState(0);
     const [reportView, setReportView] = useState<'member' | 'manager'>('member');
 
+    const [memberSearch, setMemberSearch] = useState('');
+    const [reportMemberSearch, setReportMemberSearch] = useState('');
+    const [reportManagerSearch, setReportManagerSearch] = useState('');
+
     const fetchOrganization = () => {
         catchAsync(async () => {
             const res = await fetch(`${API_URL}/organizations/details/${organizationId}`, {
@@ -124,14 +128,24 @@ const AdminOrganizationPage = () => {
         }
     }
 
-    console.log(allProjects)
+    const filteredMembers = (organization?.members ?? []).filter((member) => {
+        const query = memberSearch.toLowerCase();
+        return (
+            member.user_name.toLowerCase().includes(query) ||
+            member.user_email.toLowerCase().includes(query)
+        );
+    });
 
-    const paginatedMembers = paginate(organization?.members ?? [], membersPage);
+    const paginatedMembers = paginate(filteredMembers, membersPage);
     const paginatedTeams = paginate(organization?.teams ?? [], teamsPage);
     const paginatedProjects = paginate(allProjects, projectsPage);
 
-    const reportMembers = report?.members ?? [];
-    const reportManagers = report?.managers ?? [];
+    const reportMembers = (report?.members ?? []).filter((member) =>
+        member.user_name.toLowerCase().includes(reportMemberSearch.toLowerCase())
+    );
+    const reportManagers = (report?.managers ?? []).filter((manager) =>
+        manager.user_name.toLowerCase().includes(reportManagerSearch.toLowerCase())
+    );
     const paginatedReportMembers = paginate(reportMembers, reportMembersPage, REPORT_ITEMS_PER_PAGE);
     const paginatedReportManagers = paginate(reportManagers, reportManagersPage, REPORT_ITEMS_PER_PAGE);
 
@@ -306,6 +320,16 @@ const AdminOrganizationPage = () => {
 
                                 {reportView === 'member' && (
                                     <div className="mt-6">
+                                        <input
+                                            type="text"
+                                            placeholder="Search member by name"
+                                            value={reportMemberSearch}
+                                            onChange={(e) => {
+                                                setReportMemberSearch(e.target.value);
+                                                setReportMembersPage(0);
+                                            }}
+                                            className="mb-4 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:max-w-xs"
+                                        />
                                         {reportMembers.length > 0 ? (
                                             <>
                                                 <div className="overflow-x-auto rounded-card border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
@@ -341,13 +365,23 @@ const AdminOrganizationPage = () => {
                                                 />
                                             </>
                                         ) : (
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">No member data in this report.</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">No matching members found.</p>
                                         )}
                                     </div>
                                 )}
 
                                 {reportView === 'manager' && (
                                     <div className="mt-6">
+                                        <input
+                                            type="text"
+                                            placeholder="Search manager by name"
+                                            value={reportManagerSearch}
+                                            onChange={(e) => {
+                                                setReportManagerSearch(e.target.value);
+                                                setReportManagersPage(0);
+                                            }}
+                                            className="mb-4 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:max-w-xs"
+                                        />
                                         {reportManagers.length > 0 ? (
                                             <>
                                                 <div className="overflow-x-auto rounded-card border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
@@ -381,7 +415,7 @@ const AdminOrganizationPage = () => {
                                                 />
                                             </>
                                         ) : (
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">No manager data in this report.</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">No matching managers found.</p>
                                         )}
                                     </div>
                                 )}
@@ -468,6 +502,7 @@ const AdminOrganizationPage = () => {
                                             max={10}
                                             placeholder="5"
                                             value={noOfMembers}
+                                            onWheel={(e) => e.currentTarget.blur()}
                                             onChange={(e) => setNoOfMembers(e.target.value)}
                                             className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
                                         />
@@ -489,6 +524,16 @@ const AdminOrganizationPage = () => {
                                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                                     People in this organization.
                                 </p>
+                                <input
+                                    type="text"
+                                    placeholder="Search member by name or email"
+                                    value={memberSearch}
+                                    onChange={(e) => {
+                                        setMemberSearch(e.target.value);
+                                        setMembersPage(0);
+                                    }}
+                                    className="mt-4 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:max-w-xs"
+                                />
                                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                     {paginatedMembers.length ? (
                                         paginatedMembers.map((member) => (
@@ -501,13 +546,13 @@ const AdminOrganizationPage = () => {
                                         ))
                                     ) : (
                                         <p className="text-sm text-slate-500 dark:text-slate-400 sm:col-span-2">
-                                            No members yet.
+                                            {memberSearch ? 'No matching members found.' : 'No members yet.'}
                                         </p>
                                     )}
                                 </div>
                                 <PaginationControls
                                     page={membersPage}
-                                    totalItems={organization.members.length}
+                                    totalItems={filteredMembers.length}
                                     onBack={() => setMembersPage((prev) => prev - 1)}
                                     onNext={() => setMembersPage((prev) => prev + 1)}
                                 />

@@ -37,7 +37,7 @@ export const formatOrganizationDetails = (organizationDetails: Object, members: 
                         start_date: project.start_date,
                         target_completion_date: project.target_completion_date
                     }
-                }).filter(project => project.team_id === team.team_id)
+                }).filter(project => project.team_id === team.team_id && project.project_id)
             })
         }
     });

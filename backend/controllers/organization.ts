@@ -28,6 +28,9 @@ export const addUserToOrganization = catchAsync(async (req: Request, res: Respon
     if(!user)
         throw new AppError("User does not exist. Invalid email.", 404);
 
+    if(user.user_id === req.user.user_id)
+        throw new AppError("You can't add yourself to the organization.", 403);
+
     await pool.query("INSERT INTO organization_membership VALUES ($1, $2, $3);", [user.user_id, organization_id, user_role]);
 
     res.status(201).send({status: 'success'});
@@ -76,8 +79,8 @@ export const getOrganizationDetailsForAdmin = catchAsync(async (req: Request, re
     //get teams and projects info
     const teamsAndProjects = (await pool.query(
         `SELECT DISTINCT t.team_id, t.team_name, t.no_of_members, p.project_id, p.project_name, p.description, p.status, p.start_date, p.target_completion_date FROM organization o
-        JOIN team t ON t.organization_id = o.organization_id
-        JOIN project p ON p.team_id = t.team_id
+        LEFT JOIN team t ON t.organization_id = o.organization_id
+        LEFT JOIN project p ON p.team_id = t.team_id
         WHERE o.organization_id = $1;`, [organization_id]
     )).rows;
 

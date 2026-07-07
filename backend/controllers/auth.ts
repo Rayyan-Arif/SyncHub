@@ -117,7 +117,7 @@ export const isOrganizationPermission = (roles: string[]) => {
 
         let user = null;
         if(roles.includes('ADMIN')){
-            user = await pool.query("SELECT 1 FROM organization WHERE organization_id = $1 AND admin_id = $2;", [req.params.organization_id, req.user.user_id]);
+            user = await pool.query("SELECT 1 FROM organization WHERE organization_id = $1 AND admin_id = $2;", [organization_id, req.user.user_id]);
         }
         
         if(!user?.rowCount)

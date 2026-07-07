@@ -42,7 +42,7 @@ CREATE TABLE organization_membership(
     user_role USER_ROLE_IN_ORGANIZATION NOT NULL DEFAULT 'MEMBER',
     FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE, 
     FOREIGN KEY(organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
-    PRIMARY KEY(user_id, organization_id, user_role)
+    PRIMARY KEY(user_id, organization_id)
 );
 
 CREATE TABLE team(
