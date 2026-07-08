@@ -76,7 +76,7 @@ export const removeMemberFromProject = catchAsync(async(req, res, next) => {
 });
 
 export const getProjectDetails = catchAsync(async(req, res, next) => {
-    const {team_id} = req.body;
+    const {team_id} = req.params;
     const {project_id} = req.params;
 
     if(!(+project_id!))
@@ -111,7 +111,17 @@ export const getProjectDetails = catchAsync(async(req, res, next) => {
             )
             FROM (SELECT * FROM task WHERE project_id = $2) t
 	        JOIN assigned_tasks ast ON ast.task_id = t.task_id
-        ) AS assigned_tasks;
+        ) AS assigned_tasks,
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'task_id', task_id,
+                    'title', title,
+                    'description', description
+                )
+            )
+            FROM task WHERE project_id = $2
+        ) AS tasks_created;
     `, [team_id, project_id])).rows[0];
 
     if(!project?.project_details)
@@ -129,9 +139,9 @@ export const getProjectDetails = catchAsync(async(req, res, next) => {
 });
 
 export const getAllProjects = catchAsync(async(req, res, next) => {
-    const {organization_id, team_id} = req.body;
+    const {organization_id, team_id} = req.params;
 
-    if(!(+organization_id) || !(+team_id))
+    if(!organization_id || !team_id)
         throw new AppError("Please provide complete details to get all projects.", 400);
 
     const projects = (await pool.query(`
@@ -149,7 +159,7 @@ export const getAllProjects = catchAsync(async(req, res, next) => {
             (SELECT * FROM project WHERE team_id = (SELECT team_id FROM team WHERE team_id = $1 AND organization_id = $2)) p 
             JOIN (SELECT * FROM project_enrollment WHERE member_id = $3) pe ON pe.project_id = p.project_id
         ) AS projects_joined;    
-    `, [team_id, organization_id, req.user.user_id])).rows[0];
+    `, [+team_id, +organization_id, req.user.user_id])).rows[0];
 
     projects.projects_created = projects.projects_created ?? [];
     projects.projects_joined = projects.projects_joined ?? [];

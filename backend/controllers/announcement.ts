@@ -34,7 +34,7 @@ export const removeAnnouncement = catchAsync(async(req, res, next) => {
 });
 
 export const getAllAnnouncements = catchAsync(async(req, res, next) => {
-    const {team_id, project_id} = req.body;
+    const {team_id, project_id} = req.query;
 
     if(!team_id && !project_id)
         throw new AppError("Please provide either team or project to get any announcement.", 400);

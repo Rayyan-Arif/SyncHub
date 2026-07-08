@@ -17,21 +17,21 @@ export const createOrganization = catchAsync(async (req: Request, res: Response,
 });
 
 export const addUserToOrganization = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const {user_email, user_role} = req.body;        
+    const {user_emails, user_role} = req.body;        
     const organization_id: number = +req.params.organization_id!;
 
-    if(!user_email || !organization_id || !user_role)
-        throw new AppError("Please provide complete details like email, organization and role of user.", 400);
+    if(!user_emails || !Array.isArray(user_emails) || user_emails.length === 0 || !organization_id || !user_role)
+        throw new AppError("Please provide complete details like emails, organization and role of user.", 400);
 
-    const user = (await pool.query("SELECT user_id FROM users WHERE user_email = $1;", [user_email])).rows[0];
+    const userIDs: number[] = (await pool.query("SELECT user_id FROM users WHERE user_email = ANY($1);", [user_emails])).rows.map(user => user.user_id);
 
-    if(!user)
-        throw new AppError("User does not exist. Invalid email.", 404);
+    if(userIDs.length !== user_emails.length)
+        throw new AppError("Some users do not exist. Invalid email.", 404);
 
-    if(user.user_id === req.user.user_id)
+    if(userIDs.includes(req.user.user_id))
         throw new AppError("You can't add yourself to the organization.", 403);
 
-    await pool.query("INSERT INTO organization_membership VALUES ($1, $2, $3);", [user.user_id, organization_id, user_role]);
+    await pool.query("INSERT INTO organization_membership SELECT unnest($1::int[]), $2, $3;", [userIDs, organization_id, user_role]);
 
     res.status(201).send({status: 'success'});
 });
@@ -179,14 +179,10 @@ export const getAllOrganizations = catchAsync(async(req, res, next) => {
 });
 
 export const getOrganizationTeamsForMember = catchAsync(async(req, res, next) => {
-    const {organization_id} = req.body;
+    const {organization_id} = req.params;
 
     const teams = (await pool.query(`
-        SELECT 
-        (
-            SELECT json_agg(t)
-            FROM team t WHERE manager_id = $1 AND organization_id = $2
-        ) AS teams_created,
+        SELECT
         (
             SELECT json_agg(
                 json_build_object(
@@ -200,13 +196,29 @@ export const getOrganizationTeamsForMember = catchAsync(async(req, res, next) =>
         ) AS teams_joined;    
     `, [req.user.user_id, organization_id])).rows[0];
 
-    teams.teams_created = teams.teams_created ?? [];
     teams.teams_joined = teams.teams_joined ?? [];
 
     res.status(200).send({
         status: 'success',
         data: {
             teams
+        }
+    });
+});
+
+export const getOrganizationMembersForManager = catchAsync(async(req, res, next) => {
+    const {organization_id} = req.params;
+
+    const members = (await pool.query(`
+        SELECT u.user_id, u.user_name, u.user_email FROM users u
+        JOIN (SELECT * FROM organization_membership WHERE organization_id = $1) o
+        ON o.user_id = u.user_id;
+    `, [organization_id])).rows;
+
+    res.status(200).send({
+        status: 'success',
+        data: {
+            members
         }
     });
 });

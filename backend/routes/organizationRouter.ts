@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import { isOrganizationPermission, protect } from "../controllers/auth.js";
-import { addUserToOrganization, createOrganization, deleteOrganization, generateReportForAdmin, getAllOrganizations, getOrganizationDetailsForAdmin, getOrganizationTeamsForMember, removeUserFromOrganization } from "../controllers/organization.js";
+import { addUserToOrganization, createOrganization, deleteOrganization, generateReportForAdmin, getAllOrganizations, getOrganizationDetailsForAdmin, getOrganizationMembersForManager, getOrganizationTeamsForMember, removeUserFromOrganization } from "../controllers/organization.js";
 
 const router: Router = express.Router();
 
@@ -18,5 +18,8 @@ router.delete("/delete/:organization_id", isOrganizationPermission(["ADMIN"]), d
 //member routes
 router.get("/all", getAllOrganizations);
 router.get("/teams/:organization_id", isOrganizationPermission(['MANAGER','MEMBER']), getOrganizationTeamsForMember);
+
+//manager routes
+router.get("/members/:organization_id", isOrganizationPermission(['MANAGER']), getOrganizationMembersForManager);
 
 export default router;

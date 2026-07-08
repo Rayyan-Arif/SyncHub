@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import MemberCard from '../../components/organizationAdminComponents/MemberCard';
-import TeamCard from '../../components/organizationAdminComponents/TeamCard';
-import ProjectCard from '../../components/organizationAdminComponents/ProjectCard';
+import MemberCard from '../../components/adminComponents/MemberCard';
+import TeamCard from '../../components/adminComponents/TeamCard';
+import ProjectCard from '../../components/adminComponents/ProjectCard';
 import { API_URL, catchAsync } from '../../utils/helper';
 import type {
     OrganizationDetailForAdmin,
@@ -70,13 +70,10 @@ const AdminOrganizationPage = () => {
     const [formError, setFormError] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isAddingMember, setIsAddingMember] = useState(false);
-    const [isCreatingTeam, setIsCreatingTeam] = useState(false);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
-    const [memberEmail, setMemberEmail] = useState('');
+    const [memberEmails, setMemberEmails] = useState<string[]>(['']);
     const [memberRole, setMemberRole] = useState<'MEMBER' | 'MANAGER'>('MEMBER');
-    const [teamName, setTeamName] = useState('');
-    const [noOfMembers, setNoOfMembers] = useState('');
 
     const [membersPage, setMembersPage] = useState(0);
     const [teamsPage, setTeamsPage] = useState(0);
@@ -149,9 +146,29 @@ const AdminOrganizationPage = () => {
     const paginatedReportMembers = paginate(reportMembers, reportMembersPage, REPORT_ITEMS_PER_PAGE);
     const paginatedReportManagers = paginate(reportManagers, reportManagersPage, REPORT_ITEMS_PER_PAGE);
 
+    const handleEmailChange = (index: number, value: string) => {
+        setMemberEmails((prev) => prev.map((email, i) => (i === index ? value : email)));
+    };
+
+    const handleAddEmailField = () => {
+        setMemberEmails((prev) => [...prev, '']);
+    };
+
+    const handleRemoveEmailField = (index: number) => {
+        setMemberEmails((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleAddMember = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setFormError('');
+
+        const emails = memberEmails.map((email) => email.trim()).filter(Boolean);
+
+        if (emails.length === 0) {
+            setFormError('Please enter at least one email.');
+            return;
+        }
+
         setIsAddingMember(true);
 
         catchAsync(async () => {
@@ -160,7 +177,7 @@ const AdminOrganizationPage = () => {
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
-                    user_email: memberEmail,
+                    user_emails: emails,
                     user_role: memberRole,
                 }),
             });
@@ -168,7 +185,7 @@ const AdminOrganizationPage = () => {
             const data = await res.json();
 
             if (data.status === 'success') {
-                setMemberEmail('');
+                setMemberEmails(['']);
                 setMemberRole('MEMBER');
                 setIsAddingMember(false);
                 setMembersPage(0);
@@ -178,39 +195,6 @@ const AdminOrganizationPage = () => {
 
             setFormError(data.message ?? 'Failed to add member.');
             setIsAddingMember(false);
-        })();
-    };
-
-    const handleCreateTeam = (e: React.SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setFormError('');
-        setIsCreatingTeam(true);
-
-        catchAsync(async () => {
-            const res = await fetch(`${API_URL}/teams/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    organization_id: organizationId,
-                    team_name: teamName,
-                    no_of_members: Number(noOfMembers),
-                }),
-            });
-
-            const data = await res.json();
-
-            if (data.status === 'success') {
-                setTeamName('');
-                setNoOfMembers('');
-                setIsCreatingTeam(false);
-                setTeamsPage(0);
-                fetchOrganization();
-                return;
-            }
-
-            setFormError(data.message ?? 'Failed to create team.');
-            setIsCreatingTeam(false);
         })();
     };
 
@@ -422,28 +406,50 @@ const AdminOrganizationPage = () => {
                             </section>
                         )}
 
-                        <div className="mb-10 grid gap-6 lg:grid-cols-2">
+                        <div className="mb-10">
                             <form
                                 onSubmit={handleAddMember}
-                                className="rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                                className="max-w-xl rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                             >
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Add member</h2>
                                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                    Invite a user by email to this organization.
+                                    Invite one or more users by email to this organization.
                                 </p>
                                 <div className="mt-4 space-y-4">
                                     <div>
-                                        <label htmlFor="member-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                            Email
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Emails
                                         </label>
-                                        <input
-                                            id="member-email"
-                                            type="email"
-                                            placeholder="user@example.com"
-                                            value={memberEmail}
-                                            onChange={(e) => setMemberEmail(e.target.value)}
-                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                                        />
+                                        <div className="mt-1.5 space-y-2">
+                                            {memberEmails.map((email, index) => (
+                                                <div key={index} className="flex items-center gap-2">
+                                                    <input
+                                                        type="email"
+                                                        placeholder="user@example.com"
+                                                        value={email}
+                                                        onChange={(e) => handleEmailChange(index, e.target.value)}
+                                                        className="w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                                    />
+                                                    {memberEmails.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveEmailField(index)}
+                                                            aria-label="Remove email"
+                                                            className="button-property cursor-pointer rounded-card border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:border-danger/30 hover:text-danger dark:border-slate-700 dark:text-slate-400"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddEmailField}
+                                            className="mt-2 cursor-pointer text-sm font-medium text-primary transition hover:text-primary/80"
+                                        >
+                                            + Add another email
+                                        </button>
                                     </div>
                                     <div>
                                         <label htmlFor="member-role" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -466,54 +472,6 @@ const AdminOrganizationPage = () => {
                                     className="button-property mt-4 cursor-pointer rounded-card bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:bg-primary/90"
                                 >
                                     {isAddingMember ? 'Processing' : 'Add member'}
-                                </button>
-                            </form>
-
-                            <form
-                                onSubmit={handleCreateTeam}
-                                className="rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
-                            >
-                                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Create team</h2>
-                                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                    Add a new team to this organization.
-                                </p>
-                                <div className="mt-4 space-y-4">
-                                    <div>
-                                        <label htmlFor="team-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                            Team name
-                                        </label>
-                                        <input
-                                            id="team-name"
-                                            type="text"
-                                            placeholder="Design team"
-                                            value={teamName}
-                                            onChange={(e) => setTeamName(e.target.value)}
-                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="no-of-members" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                            Max members
-                                        </label>
-                                        <input
-                                            id="no-of-members"
-                                            type="number"
-                                            min={1}
-                                            max={10}
-                                            placeholder="5"
-                                            value={noOfMembers}
-                                            onWheel={(e) => e.currentTarget.blur()}
-                                            onChange={(e) => setNoOfMembers(e.target.value)}
-                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-                                        />
-                                    </div>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={isCreatingTeam}
-                                    className="button-property mt-4 cursor-pointer rounded-card bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:bg-primary/90"
-                                >
-                                    {isCreatingTeam ? 'Processing' : 'Create team'}
                                 </button>
                             </form>
                         </div>
@@ -566,12 +524,7 @@ const AdminOrganizationPage = () => {
                                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                     {paginatedTeams.length ? (
                                         paginatedTeams.map((team) => (
-                                            <TeamCard
-                                                key={team.team_id}
-                                                team={team}
-                                                organizationId={organizationId}
-                                                onDeleted={fetchOrganization}
-                                            />
+                                            <TeamCard key={team.team_id} team={team} />
                                         ))
                                     ) : (
                                         <p className="text-sm text-slate-500 dark:text-slate-400 sm:col-span-2">

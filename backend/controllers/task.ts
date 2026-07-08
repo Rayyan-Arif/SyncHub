@@ -53,7 +53,7 @@ export const unassignTaskFromMember = catchAsync(async(req, res, next) => {
 });
 
 export const generateReportForManager = catchAsync(async(req, res, next) => {
-    const {organization_id} = req.body;
+    const {organization_id} = req.params;
 
     const report = (await pool.query(`
         WITH task_view AS (
@@ -104,9 +104,9 @@ export const updateTaskStatus = catchAsync(async(req, res, next) => {
 });
 
 export const getAssignedTasks = catchAsync(async(req, res, next) => {
-    const {project_id} = req.body;
+    const {project_id} = req.params;
 
-    if(!(+project_id))
+    if(!project_id)
         throw new AppError("Please provide a project to get its assigned tasks.", 400);
 
     const assignedTasks = (await pool.query(`
@@ -121,7 +121,7 @@ export const getAssignedTasks = catchAsync(async(req, res, next) => {
         (
             SELECT * FROM assigned_tasks WHERE member_id = $1
         ) ast ON t.task_id = ast.task_id;    
-    `, [req.user.user_id, project_id])).rows;
+    `, [req.user.user_id, +project_id])).rows;
 
     res.status(200).send({
         status: 'success',

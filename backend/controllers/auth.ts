@@ -131,7 +131,7 @@ export const isOrganizationPermission = (roles: string[]) => {
 }
 
 export const isTeamOfOrganization = catchAsync(async(req, res, next) => {
-    const {organization_id, team_id} = req.body;
+    const {organization_id, team_id} = req.params ?? req.body;
     
     const isTeamValid = (await pool.query("SELECT 1 FROM team WHERE team_id = $1 AND organization_id = $2 AND manager_id = $3", [team_id, organization_id, req.user.user_id])).rowCount;
 

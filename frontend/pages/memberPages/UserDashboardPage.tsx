@@ -99,7 +99,7 @@ const UserDashboardPage = () => {
                             <div className="space-y-10">
                                 <section>
                                     <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                                        Organizations you admin
+                                        Organizations you created
                                     </h2>
                                     <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                                         Organizations you created and manage.
@@ -114,6 +114,7 @@ const UserDashboardPage = () => {
                                                     contact={org.contact}
                                                     description={org.description}
                                                     badge="Admin"
+                                                    onDeleted={fetchOrganizations}
                                                 />
                                             ))
                                         ) : (

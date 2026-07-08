@@ -11,6 +11,6 @@ router.post("/create", isOrganizationPermission(["MANAGER"]), createAnnouncement
 router.delete("/remove", isOrganizationPermission(["MANAGER"]), removeAnnouncement);
 
 //user routes
-router.get("/all", isOrganizationPermission(['MANAGER', 'MEMBER']), getAllAnnouncements);
+router.get("/:organization_id/all", isOrganizationPermission(['MANAGER', 'MEMBER']), getAllAnnouncements);
 
 export default router;

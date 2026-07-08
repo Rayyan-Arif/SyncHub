@@ -35,6 +35,7 @@ export const getTeamDetails = catchAsync(async(req, res, next) => {
         (
             SELECT json_agg(
                 json_build_object(
+                    'user_id', u.user_id,
                     'user_name', user_name,
                     'user_email', user_email
                 )
@@ -85,6 +86,10 @@ export const addMemberToTeam = catchAsync(async(req, res, next) => {
 
     if(!(+team_id) || (!user_emails || !Array.isArray(user_emails) || user_emails.length === 0))
         throw new AppError("Please provide both team and user emails.", 400);
+
+    //checking if manager is adding himself to the team
+    if(user_emails.includes(req.user.user_email))
+        throw new AppError("You can't add yourself to the team.", 403);
 
     //checking if member exists in this organization
     const userIDs = (await pool.query("SELECT user_id FROM organization_membership WHERE organization_id = $1 AND user_role = 'MEMBER' AND user_id IN (SELECT user_id FROM users WHERE user_email = ANY($2));", [organization_id, user_emails])).rows.map(user => user.user_id);

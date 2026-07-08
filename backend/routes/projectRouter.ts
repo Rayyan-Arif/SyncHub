@@ -7,7 +7,7 @@ const router = Express.Router();
 router.use(protect);
 
 //manager routes
-router.get("/details/:project_id", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, getProjectDetails);
+router.get("/:organization_id/:team_id/details/:project_id", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, getProjectDetails);
 
 router.post("/create", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, createProject);
 router.delete("/delete", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, removeProject);
@@ -16,6 +16,6 @@ router.post("/add-member", isOrganizationPermission(['MANAGER']), isTeamOfOrgani
 router.delete("/remove-member", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, removeMemberFromProject);
 
 //user routes
-router.get("/all", isOrganizationPermission(['MANAGER', 'MEMBER']), getAllProjects);
+router.get("/:organization_id/:team_id/all", isOrganizationPermission(['MANAGER', 'MEMBER']), getAllProjects);
 
 export default router;

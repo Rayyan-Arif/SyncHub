@@ -9,9 +9,9 @@ router.use(protect);
 //manager routes
 router.get("/all/:organization_id", isOrganizationPermission(['MANAGER']), getAllTeamsOfManager);
 router.get("/:organization_id/team/:team_id", isOrganizationPermission(['MANAGER']), getTeamDetails);
-router.post("/create", isOrganizationPermission(['MANAGER', 'ADMIN']), createTeam);
-router.delete("/delete", isOrganizationPermission(['MANAGER', 'ADMIN']), removeTeam);
-router.post("/add-member", isOrganizationPermission(['MANAGER', 'ADMIN']), addMemberToTeam);
-router.delete("/remove-member", isOrganizationPermission(['MANAGER', 'ADMIN']), removeMemberFromTeam);
+router.post("/create", isOrganizationPermission(['MANAGER']), createTeam);
+router.delete("/delete", isOrganizationPermission(['MANAGER']), removeTeam);
+router.post("/add-member", isOrganizationPermission(['MANAGER']), addMemberToTeam);
+router.delete("/remove-member", isOrganizationPermission(['MANAGER']), removeMemberFromTeam);
 
 export default router;

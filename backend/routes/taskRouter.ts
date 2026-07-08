@@ -15,6 +15,6 @@ router.get("/performance/:organization_id", isOrganizationPermission(['MANAGER']
 
 //user routes
 router.patch("/assigned/update-status", isOrganizationPermission(['MEMBER']), updateTaskStatus);
-router.get("/assigned", isOrganizationPermission(['MEMBER']), getAssignedTasks);
+router.get("/:organization_id/:project_id/assigned", isOrganizationPermission(['MEMBER']), getAssignedTasks);
 
 export default router;

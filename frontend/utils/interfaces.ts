@@ -105,3 +105,72 @@ export interface OrganizationPerformance {
     members?: OrganizationPerformanceMember[];
     managers?: OrganizationPerformanceManager[];
 }
+
+export interface MemberTeam {
+    team_id: number;
+    team_name: string;
+    no_of_members: number;
+}
+
+export interface OrganizationTeamsForMember {
+    teams_joined: MemberTeam[];
+}
+
+export interface TeamMember {
+    user_id: number;
+    user_name: string;
+    user_email: string;
+}
+
+export interface TeamDetailsForManager {
+    projects: Projects[];
+    team_members: TeamMember[];
+}
+
+export interface TeamDetailsResponseForManager {
+    team_name: string;
+    no_of_members: number;
+    team_details: TeamDetailsForManager;
+}
+
+export interface TeamMemberPerformance {
+    user_id: number;
+    user_name: string;
+    user_email: string;
+    tasks_assigned: number;
+    tasks_in_progress: number;
+    tasks_completed: number;
+    tasks_missed: number;
+}
+
+export interface AnnouncementItem {
+    announcement_id: number;
+    announcement: string;
+    created_at: string;
+}
+
+export interface ProjectMember {
+    user_id: number;
+    user_name: string;
+    user_email: string;
+}
+
+export interface ProjectTaskAssignment {
+    task_id: number;
+    title: string;
+    description: string;
+    member_id: number;
+}
+
+export interface ProjectCreatedTask {
+    task_id: number;
+    title: string;
+    description: string;
+}
+
+export interface ProjectDetailsForManager {
+    project_details: Projects[];
+    project_members: ProjectMember[];
+    assigned_tasks: ProjectTaskAssignment[];
+    tasks_created: ProjectCreatedTask[];
+}
