@@ -160,6 +160,7 @@ export interface ProjectTaskAssignment {
     title: string;
     description: string;
     member_id: number;
+    status: string;
 }
 
 export interface ProjectCreatedTask {
@@ -173,4 +174,17 @@ export interface ProjectDetailsForManager {
     project_members: ProjectMember[];
     assigned_tasks: ProjectTaskAssignment[];
     tasks_created: ProjectCreatedTask[];
+}
+
+export interface TeamProjectsForMember {
+    projects_joined: Projects[];
+}
+
+export interface AssignedTaskForMember {
+    task_id: number;
+    title: string;
+    description: string;
+    assigned_date: string;
+    due_date: string;
+    status: string;
 }

@@ -106,6 +106,7 @@ export const getProjectDetails = catchAsync(async(req, res, next) => {
                     'task_id', t.task_id,
                     'title', title,
                     'description', description,
+                    'status', ast.status,
                     'member_id', ast.member_id
                 )
             )

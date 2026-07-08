@@ -366,13 +366,51 @@ const ManagerProjects = () => {
 
                             <form onSubmit={handleAssignTask} className="rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Assign task</h2>
+                                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                    Use a task ID from created tasks and a member ID from project members.
+                                </p>
                                 {assignError && (
                                     <p className="mt-3 rounded-card border border-danger/20 bg-danger/10 px-4 py-2.5 text-sm text-danger">{assignError}</p>
                                 )}
                                 <div className="mt-4 space-y-4">
-                                    <input type="number" placeholder="Task ID" value={assignTaskId} onChange={(e) => setAssignTaskId(e.target.value)} className="w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
-                                    <input type="number" placeholder="Member ID" value={assignMemberId} onChange={(e) => setAssignMemberId(e.target.value)} className="w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
-                                    <input type="date" value={assignDueDate} onChange={(e) => setAssignDueDate(e.target.value)} className="w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
+                                    <div>
+                                        <label htmlFor="assign-task-id" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Enter task ID
+                                        </label>
+                                        <input
+                                            id="assign-task-id"
+                                            type="number"
+                                            placeholder="e.g. 12"
+                                            value={assignTaskId}
+                                            onChange={(e) => setAssignTaskId(e.target.value)}
+                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="assign-member-id" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Enter member ID
+                                        </label>
+                                        <input
+                                            id="assign-member-id"
+                                            type="number"
+                                            placeholder="e.g. 5"
+                                            value={assignMemberId}
+                                            onChange={(e) => setAssignMemberId(e.target.value)}
+                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="assign-due-date" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Due date
+                                        </label>
+                                        <input
+                                            id="assign-due-date"
+                                            type="date"
+                                            value={assignDueDate}
+                                            onChange={(e) => setAssignDueDate(e.target.value)}
+                                            className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                                        />
+                                    </div>
                                 </div>
                                 <button type="submit" disabled={isAssigning} className="button-property mt-4 cursor-pointer rounded-card bg-primary px-4 py-2.5 text-sm font-semibold text-white">
                                     {isAssigning ? 'Processing' : 'Assign task'}
@@ -382,12 +420,39 @@ const ManagerProjects = () => {
 
                         <section className="mb-10 rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Unassign task</h2>
+                            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                Remove an existing task assignment from a member.
+                            </p>
                             {unassignError && (
                                 <p className="mt-3 rounded-card border border-danger/20 bg-danger/10 px-4 py-2.5 text-sm text-danger">{unassignError}</p>
                             )}
-                            <form onSubmit={handleUnassignTask} className="mt-4 grid gap-4 md:grid-cols-3">
-                                <input type="number" placeholder="Task ID" value={unassignTaskId} onChange={(e) => setUnassignTaskId(e.target.value)} className="rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
-                                <input type="number" placeholder="Member ID" value={unassignMemberId} onChange={(e) => setUnassignMemberId(e.target.value)} className="rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
+                            <form onSubmit={handleUnassignTask} className="mt-4 space-y-4 md:max-w-xl">
+                                <div>
+                                    <label htmlFor="unassign-task-id" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Enter task ID
+                                    </label>
+                                    <input
+                                        id="unassign-task-id"
+                                        type="number"
+                                        placeholder="e.g. 12"
+                                        value={unassignTaskId}
+                                        onChange={(e) => setUnassignTaskId(e.target.value)}
+                                        className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="unassign-member-id" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Enter member ID
+                                    </label>
+                                    <input
+                                        id="unassign-member-id"
+                                        type="number"
+                                        placeholder="e.g. 5"
+                                        value={unassignMemberId}
+                                        onChange={(e) => setUnassignMemberId(e.target.value)}
+                                        className="mt-1.5 w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                    />
+                                </div>
                                 <button type="submit" disabled={isUnassigning} className="button-property cursor-pointer rounded-card border border-danger/30 px-4 py-2.5 text-sm font-semibold text-danger">
                                     {isUnassigning ? 'Processing' : 'Unassign task'}
                                 </button>
@@ -402,7 +467,7 @@ const ManagerProjects = () => {
                                         <div key={member.user_id} className="rounded-card border border-slate-200 p-4 dark:border-slate-700">
                                             <p className="font-semibold text-slate-900 dark:text-slate-100">{member.user_name}</p>
                                             <p className="text-sm text-slate-600 dark:text-slate-400">{member.user_email}</p>
-                                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">ID: {member.user_id}</p>
+                                            <p className="mt-1 text-xs text-black dark:text-white">ID: {member.user_id}</p>
                                         </div>
                                     ))
                                 ) : (
@@ -450,16 +515,18 @@ const ManagerProjects = () => {
                                             <th className="py-2 pr-4">Title</th>
                                             <th className="py-2 pr-4">Description</th>
                                             <th className="py-2">Member ID</th>
+                                            <th className="py-2">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {projectData?.assigned_tasks.length ? (
                                             projectData.assigned_tasks.map((task, idx) => (
-                                                <tr key={`${task.task_id}-${task.member_id}-${idx}`} className="border-b border-slate-100 dark:border-slate-800">
+                                                <tr key={`${task.task_id}-${task.member_id}-${idx}`} className="border-b border-slate-100 dark:border-slate-800 text-black dark:text-slate-200">
                                                     <td className="py-2 pr-4">{task.task_id}</td>
                                                     <td className="py-2 pr-4">{task.title}</td>
                                                     <td className="py-2 pr-4">{task.description}</td>
                                                     <td className="py-2">{task.member_id}</td>
+                                                    <td className="py-2">{task.status.toLowerCase()}</td>
                                                 </tr>
                                             ))
                                         ) : (

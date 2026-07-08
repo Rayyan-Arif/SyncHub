@@ -1,9 +1,12 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useOutletContext } from "react-router-dom"
+import type { AuthContext } from "../utils/interfaces"
 
 const UserDashboardLayout = () => {
+    const {user, setUser} = useOutletContext<AuthContext>();
+
     return (
         <>
-            <Outlet />
+            <Outlet context={{user, setUser}}/>
         </>
     )
 }

@@ -16,6 +16,6 @@ router.post("/add-member", isOrganizationPermission(['MANAGER']), isTeamOfOrgani
 router.delete("/remove-member", isOrganizationPermission(['MANAGER']), isTeamOfOrganization, removeMemberFromProject);
 
 //user routes
-router.get("/:organization_id/:team_id/all", isOrganizationPermission(['MANAGER', 'MEMBER']), getAllProjects);
+router.get("/:organization_id/:team_id/all", isOrganizationPermission(['MEMBER']), getAllProjects);
 
 export default router;
