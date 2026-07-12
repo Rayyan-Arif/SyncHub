@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getInitials, scrollToComponent, API_URL } from "../utils/helper";
 import { useEffect, useState } from "react";
 import type { User } from "../utils/interfaces";
+import logo from '../synchub_icon.png';
 
 const Navbar = ({ user, setUser, isLanding }: { user: User | null; setUser: React.Dispatch<React.SetStateAction<User | null>> | null; isLanding: Boolean }) => {
     const [theme, setTheme] = useState<string>(localStorage.getItem("theme") ?? "light");
@@ -34,9 +35,7 @@ const Navbar = ({ user, setUser, isLanding }: { user: User | null; setUser: Reac
 
             <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
                 <Link to="/" className="flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-card bg-primary text-sm font-bold text-white shadow-sm shadow-primary/30">
-                        S
-                    </span>
+                    <img src={logo} className="max-h-[50px] "/>
                     <span className="text-lg font-semibold tracking-tight">SyncHub</span>
                 </Link>
 

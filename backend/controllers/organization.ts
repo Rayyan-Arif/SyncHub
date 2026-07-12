@@ -96,6 +96,7 @@ export const getOrganizationDetailsForAdmin = catchAsync(async (req: Request, re
 
 export const generateReportForAdmin = (roles: string[]) => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        console.log(roles);
         const organization_id: number = +req.params.organization_id!;
 
         if(!organization_id)
@@ -108,15 +109,15 @@ export const generateReportForAdmin = (roles: string[]) => {
                 SELECT u.user_id, u.user_name, u.user_email, COUNT(DISTINCT(tm.team_id)) AS teams_joined, COUNT(DISTINCT(pe.project_id)) AS projects_joined, COUNT(DISTINCT(ast2.task_id)) AS tasks_assigned, COUNT(DISTINCT(ast1.task_id)) AS tasks_completed FROM 
                 (SELECT * FROM organization_membership WHERE organization_id = $1 and user_role = 'MEMBER') om
                 JOIN (SELECT user_id, user_name, user_email FROM users) u ON u.user_id = om.user_id
-                JOIN (SELECT team_id, organization_id FROM team WHERE organization_id = $1) t ON t.organization_id = om.organization_id
+                LEFT JOIN (SELECT team_id, organization_id FROM team WHERE organization_id = $1) t ON t.organization_id = om.organization_id
                 LEFT JOIN team_membership tm ON t.team_id = tm.team_id AND u.user_id = tm.team_member_id
-                JOIN (SELECT project_id, team_id FROM project) p ON p.team_id = t.team_id
+                LEFT JOIN (SELECT project_id, team_id FROM project) p ON p.team_id = t.team_id
                 LEFT JOIN project_enrollment pe ON pe.project_id = p.project_id AND u.user_id = pe.member_id
-                JOIN (SELECT task_id, project_id FROM task) tk ON tk.project_id = p.project_id
+                LEFT JOIN (SELECT task_id, project_id FROM task) tk ON tk.project_id = p.project_id
                 LEFT JOIN (SELECT task_id, member_id FROM assigned_tasks WHERE status = 'COMPLETED') ast1 ON tk.task_id = ast1.task_id AND u.user_id = ast1.member_id
                 LEFT JOIN (SELECT task_id, member_id FROM assigned_tasks) ast2 ON tk.task_id = ast2.task_id AND u.user_id = ast2.member_id
                 GROUP BY u.user_id, u.user_name, u.user_email;`, [organization_id]
-            )).rows
+            )).rows;
 
             performance = {...performance, members};
         }

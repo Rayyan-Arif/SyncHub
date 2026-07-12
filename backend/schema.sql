@@ -110,8 +110,8 @@ CREATE TABLE announcements(
     created_at DATE DEFAULT NOW(),
     team_id INT,
     project_id INT,
-    FOREIGN KEY(team_id) REFERENCES team(team_id),
-    FOREIGN KEY(project_id) REFERENCES project(project_id),
+    FOREIGN KEY(team_id) REFERENCES team(team_id) ON DELETE CASCADE,
+    FOREIGN KEY(project_id) REFERENCES project(project_id) ON DELETE CASCADE,
     CONSTRAINT valid_fk_key CHECK(team_id IS NOT NULL OR project_id IS NOT NULL),
     UNIQUE(announcement, team_id, project_id, created_at)
 );

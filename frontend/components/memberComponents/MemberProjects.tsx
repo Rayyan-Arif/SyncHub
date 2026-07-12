@@ -153,22 +153,28 @@ const MemberProjects = () => {
                                                 Current status: {task.status}
                                             </p>
                                             <div className="mt-4 flex flex-wrap gap-2">
-                                                <button
-                                                    type="button"
-                                                    disabled={isUpdatingTask}
-                                                    onClick={() => handleUpdateTaskStatus(task.task_id, 'IN PROGRESS')}
-                                                    className="button-property cursor-pointer rounded-card border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/10"
-                                                >
-                                                    Mark In Progress
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    disabled={isUpdatingTask}
-                                                    onClick={() => handleUpdateTaskStatus(task.task_id, 'COMPLETED')}
-                                                    className="button-property cursor-pointer rounded-card border border-success/30 px-3 py-1.5 text-xs font-semibold text-success transition hover:bg-success/10"
-                                                >
-                                                    Mark Completed
-                                                </button>
+                                                {
+                                                    task.status !== 'IN PROGRESS' && 
+                                                    <button
+                                                        type="button"
+                                                        disabled={isUpdatingTask}
+                                                        onClick={() => handleUpdateTaskStatus(task.task_id, 'IN PROGRESS')}
+                                                        className="button-property cursor-pointer rounded-card border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/10"
+                                                    >
+                                                        Mark In Progress
+                                                    </button>
+                                                }
+                                                {
+                                                    task.status !== 'COMPLETED' &&
+                                                    <button
+                                                        type="button"
+                                                        disabled={isUpdatingTask}
+                                                        onClick={() => handleUpdateTaskStatus(task.task_id, 'COMPLETED')}
+                                                        className="button-property cursor-pointer rounded-card border border-success/30 px-3 py-1.5 text-xs font-semibold text-success transition hover:bg-success/10"
+                                                    >
+                                                        Mark Completed
+                                                    </button>
+                                                }
                                             </div>
                                         </div>
                                     ))

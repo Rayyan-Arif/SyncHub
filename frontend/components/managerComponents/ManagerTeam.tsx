@@ -118,7 +118,7 @@ const ManagerTeam = () => {
 
     const fetchTeamAnnouncements = () => {
         catchAsync(async () => {
-            const res = await fetch(`${API_URL}/announcements/all?team_id=${teamId}`, {
+            const res = await fetch(`${API_URL}/announcements/${organizationId}/all?team_id=${teamId}`, {
                 credentials: 'include',
             });
 

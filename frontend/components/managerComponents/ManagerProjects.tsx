@@ -34,6 +34,10 @@ const ManagerProjects = () => {
     const [unassignError, setUnassignError] = useState('');
     const [isUnassigning, setIsUnassigning] = useState(false);
 
+    const [memberEmails, setMemberEmails] = useState<string[]>(['']);
+    const [memberFormError, setMemberFormError] = useState('');
+    const [isAddingMembers, setIsAddingMembers] = useState(false);
+
     const fetchProjectDetails = () => {
         setIsLoading(true);
         catchAsync(async () => {
@@ -264,6 +268,58 @@ const ManagerProjects = () => {
         })();
     };
 
+    const handleEmailChange = (index: number, value: string) => {
+        setMemberEmails((prev) => prev.map((email, i) => (i === index ? value : email)));
+    };
+
+    const handleAddEmailField = () => {
+        setMemberEmails((prev) => [...prev, '']);
+    };
+
+    const handleRemoveEmailField = (index: number) => {
+        setMemberEmails((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleAddMembersToProject = (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setMemberFormError('');
+
+        const emails = memberEmails.map((email) => email.trim()).filter(Boolean);
+
+        if (emails.length === 0) {
+            setMemberFormError('Please enter at least one email.');
+            return;
+        }
+
+        setIsAddingMembers(true);
+
+        catchAsync(async () => {
+            const res = await fetch(`${API_URL}/projects/add-member`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    organization_id: organizationId,
+                    team_id: teamId,
+                    project_id: projectId,
+                    member_emails: emails,
+                }),
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (data.status === 'success' || res.ok) {
+                setMemberEmails(['']);
+                setIsAddingMembers(false);
+                fetchProjectDetails();
+                return;
+            }
+
+            setMemberFormError(data.message ?? 'Failed to add members.');
+            setIsAddingMembers(false);
+        })();
+    };
+
     const project = projectData?.project_details?.[0];
 
     return (
@@ -461,6 +517,66 @@ const ManagerProjects = () => {
 
                         <section className="mb-10 rounded-card border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Project members</h2>
+                            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                Add team members to this project by email.
+                            </p>
+
+                            <div className="mt-6 rounded-card border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800/50">
+                                <h3 className="text-md font-semibold text-slate-900 dark:text-slate-100">Add members</h3>
+                                {memberFormError && (
+                                    <p className="mt-3 rounded-card border border-danger/20 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+                                        {memberFormError}
+                                    </p>
+                                )}
+
+                                <form onSubmit={handleAddMembersToProject}>
+                                    <div className="mt-4 space-y-4">
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Member emails
+                                        </label>
+                                        {memberEmails.map((email, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <input
+                                                    type="email"
+                                                    placeholder="user@example.com"
+                                                    value={email}
+                                                    onChange={(e) => handleEmailChange(index, e.target.value)}
+                                                    className="w-full rounded-card border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+                                                />
+                                                {memberEmails.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveEmailField(index)}
+                                                        aria-label="Remove email"
+                                                        className="button-property cursor-pointer rounded-card border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:border-danger/30 hover:text-danger dark:border-slate-700 dark:text-slate-400"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className='w-full flex flex-col md:flex-row items-center justify-between'>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddEmailField}
+                                            className="mt-3 cursor-pointer text-sm font-medium text-primary transition hover:text-primary/80"
+                                        >
+                                            + Add another email
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            disabled={isAddingMembers}
+                                            className="button-property mt-4 cursor-pointer rounded-card bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary/25 transition hover:bg-primary/90 disabled:opacity-50"
+                                        >
+                                            {isAddingMembers ? 'Processing' : 'Add to project'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
                             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 {projectData?.project_members.length ? (
                                     projectData.project_members.map((member) => (

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import Express from "express";
+import { DatabaseError } from "pg";
 
 export class AppError extends Error {
     statusCode: number;
@@ -9,6 +10,10 @@ export class AppError extends Error {
 
         this.statusCode = statusCode;
     }
+}
+
+const handleDuplicateEmail = (err: unknown): AppError => {
+    return new AppError('An account with this email already exists. Signup with another email.', 400);
 }
 
 const sendErrorProd = (err: unknown, res: Response) => {
@@ -40,11 +45,16 @@ const sendErrorDev = (err: unknown, res: Response) => {
     });
 }
 
-export const globalErrorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {    
     if(process.env.NODE_ENV === 'development')
         sendErrorDev(err, res);
-    else if(process.env.NODE_ENV === 'production')
+    else if(process.env.NODE_ENV === 'production'){
+        
+        if(err instanceof DatabaseError && err.code === '23505')
+            err = handleDuplicateEmail(err);
+
         sendErrorProd(err, res);
+    }
 }
 
 export const catchAsync = (func: (a: Request, b: Response, c: NextFunction) => Promise<void>): (a: Request, b: Response, c: NextFunction) => Promise<void> => {

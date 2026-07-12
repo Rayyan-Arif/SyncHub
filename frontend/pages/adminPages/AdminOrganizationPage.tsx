@@ -413,7 +413,7 @@ const AdminOrganizationPage = () => {
                             >
                                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Add member</h2>
                                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                    Invite one or more users by email to this organization.
+                                    Invite one or more users by email to this organization. Note that role will be same for all users you add at the same time.
                                 </p>
                                 <div className="mt-4 space-y-4">
                                     <div>

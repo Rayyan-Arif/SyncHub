@@ -99,12 +99,6 @@ const LoginPage = () => {
                                 >
                                     Password
                                 </label>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer text-sm font-medium text-primary transition hover:text-primary/80"
-                                >
-                                    Forgot password?
-                                </button>
                             </div>
                             <div className="relative mt-1.5">
                                 <input

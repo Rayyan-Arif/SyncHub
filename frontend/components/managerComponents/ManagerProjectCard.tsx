@@ -30,7 +30,7 @@ const ManagerProjectCard = ({ project, organizationId, teamId, onDeleted }: Mana
     };
 
     return (
-        <Link to={`projects/${project.project_id}`} className="cursor-pointer rounded-card border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <button type='button' className="text-left rounded-card border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start justify-between gap-3">
                 <div>
                     <h3 className="font-semibold text-slate-900 dark:text-slate-100">{project.project_name}</h3>
@@ -51,14 +51,22 @@ const ManagerProjectCard = ({ project, organizationId, teamId, onDeleted }: Mana
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 {formatUserFriendlyDate(project.start_date)} → {formatUserFriendlyDate(project.target_completion_date)}
             </p>
-            <button
-                type="button"
-                onClick={handleDelete}
-                className="button-property mt-4 cursor-pointer rounded-card border border-danger/30 px-3 py-1.5 text-xs font-semibold text-danger transition hover:bg-danger/10"
-            >
-                Delete project
-            </button>
-        </Link>
+            <div className='flex flex-col md:flex-row w-full items-center justify-between'>
+                <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="button-property mt-4 cursor-pointer rounded-card border border-danger/30 px-3 py-1.5 text-xs font-semibold text-danger transition hover:bg-danger/10"
+                >
+                    Delete project
+                </button>
+                <Link
+                    to={`projects/${project.project_id}`}
+                    className="button-property mt-4 cursor-pointer rounded-card border border-success/30 px-3 py-1.5 text-xs font-semibold text-success transition hover:bg-success/10"
+                >
+                    View Project
+                </Link>
+            </div>
+        </button>
     );
 };
 
