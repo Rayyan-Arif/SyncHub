@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cross-env NODE_ENV=development nodemon --exec tsx server.ts",
+    "dev": "node api.js && cross-env NODE_ENV=development nodemon --exec tsx server.ts",
     "prod": "cross-env NODE_ENV=production nodemon --exec tsx server.ts"
   },
   "dependencies": {
